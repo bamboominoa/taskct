@@ -1,0 +1,6 @@
+{
+  "name": "TaskPulse",
+  "description": "Ứng dụng quản lý công việc thông minh: tải tệp hoặc chụp ảnh để AI tự động phân tích và thêm công việc, kèm tính năng nhắc nhở thông minh qua Telegram.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

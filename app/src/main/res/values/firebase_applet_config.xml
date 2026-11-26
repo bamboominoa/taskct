@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources>
+    <string name="firestore_database_id" translatable="false">ai-studio-android-taskpuls-85b6fb7d-cf6a-4ed7-829c-11bf35f309b6</string>
+    <string name="recaptcha_site_key" translatable="false">6Lf4fzIuAAAAAL_epOCeDyjnbcXBQUMNYdOyOSkv</string>
+</resources>

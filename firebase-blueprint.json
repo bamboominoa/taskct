@@ -1,0 +1,140 @@
+{
+  "entities": {
+    "TaskItem": {
+      "title": "TaskItem",
+      "description": "A user task created manually or automatically extracted by Gemini AI from an uploaded file or captured photo, with optional smart Telegram reminders.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Short actionable task title (1 to 200 characters)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional detailed task description or notes (up to 2000 characters)."
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["HIGH", "MEDIUM", "LOW"],
+          "description": "Task urgency level."
+        },
+        "category": {
+          "type": "string",
+          "description": "Task category label (1 to 50 characters)."
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": ["MANUAL", "FILE", "PHOTO"],
+          "description": "Origin of the task."
+        },
+        "sourceName": {
+          "type": "string",
+          "description": "Optional filename or capture source label (up to 200 characters)."
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Whether the task has been completed."
+        },
+        "dueAtMillis": {
+          "type": "integer",
+          "description": "Optional due date/time in epoch milliseconds (0 if no deadline)."
+        },
+        "reminderMinutesBefore": {
+          "type": "integer",
+          "description": "Lead time in minutes before dueAtMillis to trigger the smart Telegram reminder (0 to 10080)."
+        },
+        "reminderEnabled": {
+          "type": "boolean",
+          "description": "Whether smart Telegram reminder is enabled for this task."
+        },
+        "telegramNotified": {
+          "type": "boolean",
+          "description": "Whether a Telegram reminder has already been sent for this task."
+        },
+        "smartReminderText": {
+          "type": "string",
+          "description": "Optional AI-crafted motivational reminder message for Telegram (up to 500 characters)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp written via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp written via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "priority",
+        "category",
+        "sourceType",
+        "completed",
+        "dueAtMillis",
+        "reminderMinutesBefore",
+        "reminderEnabled",
+        "telegramNotified",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AiScanRecord": {
+      "title": "AiScanRecord",
+      "description": "Audit log of AI file or photo analysis sessions performed by the user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": ["FILE", "PHOTO"],
+          "description": "Whether the AI analyzed an uploaded file or captured photo."
+        },
+        "sourceName": {
+          "type": "string",
+          "description": "Filename or photo label (1 to 200 characters)."
+        },
+        "summary": {
+          "type": "string",
+          "description": "AI-generated brief summary of the analyzed document or image (1 to 1000 characters)."
+        },
+        "extractedCount": {
+          "type": "integer",
+          "description": "Number of tasks extracted from the source (0 to 50)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp written via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "sourceType",
+        "sourceName",
+        "summary",
+        "extractedCount",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/TaskItem" },
+      "description": "User-owned task items synced in real time."
+    },
+    "/users/{userId}/ai_scans/{scanId}": {
+      "schema": { "$ref": "#/entities/AiScanRecord" },
+      "description": "User-owned history of AI file and photo scans."
+    }
+  }
+}
