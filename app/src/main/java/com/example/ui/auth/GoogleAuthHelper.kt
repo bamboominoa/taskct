@@ -22,6 +22,8 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 
 private const val AUTH_TAG = "Auth"
 
@@ -63,12 +65,17 @@ fun attemptAutoSignIn(
                 onUnauthenticated()
                 return@launch
             }
-            val cred = credentialManager.getCredential(activity, request).credential
+            val result = withTimeoutOrNull(4_000L) {
+                credentialManager.getCredential(activity, request)
+            }
+            val cred = result?.credential
             if (cred is CustomCredential && cred.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val token = GoogleIdTokenCredential.createFrom(cred.data).idToken
-                Firebase.auth.signInWithCredential(
-                    GoogleAuthProvider.getCredential(token, null)
-                ).await()
+                withTimeout(20_000L) {
+                    Firebase.auth.signInWithCredential(
+                        GoogleAuthProvider.getCredential(token, null)
+                    ).await()
+                }
                 onAuthSuccess()
             } else {
                 onUnauthenticated()
@@ -105,9 +112,11 @@ fun onGoogleSignInClicked(
             val cred = credentialManager.getCredential(activity, request).credential
             if (cred is CustomCredential && cred.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val token = GoogleIdTokenCredential.createFrom(cred.data).idToken
-                Firebase.auth.signInWithCredential(
-                    GoogleAuthProvider.getCredential(token, null)
-                ).await()
+                withTimeout(25_000L) {
+                    Firebase.auth.signInWithCredential(
+                        GoogleAuthProvider.getCredential(token, null)
+                    ).await()
+                }
                 onAuthSuccess()
             } else {
                 onAuthError("Loại thông tin đăng nhập không hợp lệ.")

@@ -30,18 +30,43 @@ jobs:
             yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
           fi
 
+      - name: Restore app/google-services.json from GitHub Secret
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -f app/google-services.json ]; then
+            echo "Found app/google-services.json in repository."
+          elif [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            FIRST_CHAR=$(printf '%s' "$GOOGLE_SERVICES_JSON" | tr -d '[:space:]' | cut -c1)
+            if [ "$FIRST_CHAR" = "{" ]; then
+              printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+            else
+              printf '%s' "$GOOGLE_SERVICES_JSON" | base64 -d > app/google-services.json
+            fi
+            echo "Restored app/google-services.json from GOOGLE_SERVICES_JSON secret."
+          else
+            echo "::error::Missing app/google-services.json! Please add the GOOGLE_SERVICES_JSON secret in GitHub repo Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
       - name: Prepare debug signing keystore
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
         run: |
           if [ -f debug.keystore.base64 ]; then
-            base64 -d debug.keystore.base64 > debug.keystore
+            tr -d '[:space:]' < debug.keystore.base64 | base64 -d > debug.keystore
             echo "Decoded project debug.keystore from debug.keystore.base64"
-          elif [ ! -f debug.keystore ]; then
+          elif [ -n "$DEBUG_KEYSTORE_BASE64" ]; then
+            printf '%s' "$DEBUG_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > debug.keystore
+            echo "Decoded project debug.keystore from DEBUG_KEYSTORE_BASE64 secret"
+          else
+            echo "::warning::debug.keystore.base64 is missing! Google Sign-In will fail unless you upload debug.keystore.base64 from AI Studio or register this fallback SHA-1 in Firebase Console."
             keytool -genkeypair -v -keystore debug.keystore \
               -storepass android -alias androiddebugkey -keypass android \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=Android Debug,O=Android,C=US"
-            echo "Generated fallback debug.keystore"
           fi
+          keytool -list -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android | grep -E "SHA1:|SHA256:"
 
       - name: Set up Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4

@@ -66,7 +66,6 @@ fun AuthScreen(
     val credentialManager = remember(context) { CredentialManager.create(context) }
 
     var isLoading by remember { mutableStateOf(false) }
-    var isAutoChecking by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -74,12 +73,9 @@ fun AuthScreen(
             context = context,
             credentialManager = credentialManager,
             onAuthSuccess = {
-                isAutoChecking = false
                 onAuthSuccess()
             },
-            onUnauthenticated = {
-                isAutoChecking = false
-            },
+            onUnauthenticated = { },
             scope = scope
         )
     }
@@ -268,10 +264,11 @@ fun AuthScreen(
                             scope = scope,
                             onAuthCancelled = {
                                 isLoading = false
+                                errorMessage = "Đăng nhập đã bị hủy. Nếu không thấy cửa sổ chọn tài khoản Google, hãy đảm bảo APK được ký bằng đúng debug.keystore.base64 của dự án."
                             }
                         )
                     },
-                    enabled = !isLoading && !isAutoChecking,
+                    enabled = !isLoading,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -282,7 +279,7 @@ fun AuthScreen(
                         .height(54.dp)
                         .testTag("google_sign_in_button")
                 ) {
-                    if (isLoading || isAutoChecking) {
+                    if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(22.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
@@ -290,7 +287,7 @@ fun AuthScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = if (isAutoChecking) "Đang kiểm tra phiên đăng nhập..." else "Đang đăng nhập...",
+                            text = "Đang đăng nhập...",
                             style = MaterialTheme.typography.labelLarge
                         )
                     } else {
